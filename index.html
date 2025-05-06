@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة مخزون الغزل</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.14/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <nav class="navlinks">
+        <ul>
+            <li><a href="#home" class="nav-link active"><i class="fas fa-home"></i> الرئيسية</a></li>
+            <li><a href="#inventory" class="nav-link"><i class="fas fa-box"></i> المخزون</a></li>
+            <li><a href="#operations" class="nav-link"><i class="fas fa-cogs"></i> العمليات</a></li>
+            <li>
+                <button id="theme-toggle" class="theme-toggle" title="تبديل الثيم">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </li>
+        </ul>
+    </nav>
+    <div class="layout">
+        <aside class="sidebar">
+            <h2>لوحة التحكم</h2>
+            <div class="control-buttons">
+                <button class="tab-button active" onclick="showTab('inventory')">المخزون المتاح</button>
+                <button class="tab-button" onclick="showTab('daily')">العمليات اليومية</button>
+            </div>
+        </aside>
+        <main class="main-content">
+            <div class="container">
+                <div class="popup-form" id="addForm">
+                    <h2>تسجيل عملية جديدة</h2>
+                    <form id="yarnForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="type">الصنف:</label>
+                                <input type="text" id="type" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="color">اللون:</label>
+                                <input type="text" id="color" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="number">النمرة:</label>
+                                <input type="number" id="number" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="weight">الكمية:</label>
+                                <input type="number" id="weight" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="date">التاريخ:</label>
+                                <input type="date" id="date" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="operation">نوع العملية:</label>
+                                <select id="operation" required>
+                                    <option value="add">إضافة</option>
+                                    <option value="subtract">سحب</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="submit-btn">تسجيل العملية</button>
+                            <button type="button" class="cancel-btn" onclick="closeForm()">إلغاء</button>
+                        </div>
+                    </form>
+                </div>
+                <section id="inventory-list" class="tab-content active">
+                    <div class="section-header">
+                        <h2>المخزون المتاح</h2>
+                        <div class="section-actions">
+                            <button onclick="showAddForm()" class="add-btn"><i class="fas fa-plus"></i> تسجيل عملية جديدة</button>
+                            <button onclick="deleteAllData()" class="delete-all-btn"><i class="fas fa-trash"></i> حذف جميع البيانات</button>
+                            <!-- <button onclick="generatePDF()" class="pdf-btn"><i class="fas fa-file-pdf"></i> إنشاء PDF</button> -->
+                            <button onclick="downloadTablePDF()" class="pdf-btn"><i class="fas fa-print"></i> حفظ PDF للطباعة</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>الصنف</th>
+                                    <th>اللون</th>
+                                    <th>النمرة</th>
+                                    <th>الكمية المتاحة</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+                <section id="daily-operations" class="tab-content">
+                    <div class="section-header">
+                        <h2>العمليات اليومية</h2>
+                        <div class="filter-section">
+                            <label for="filterDate">اختر التاريخ:</label>
+                            <input type="date" id="filterDate">
+                            <button onclick="previousDay()" class="nav-btn"><i class="fas fa-arrow-right"></i></button>
+                            <button onclick="nextDay()" class="nav-btn"><i class="fas fa-arrow-left"></i></button>
+                            <button onclick="filterOperations()" class="filter-btn">عرض العمليات</button>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table id="operationsTable">
+                            <thead>
+                                <tr>
+                                    <th>الصنف</th>
+                                    <th>اللون</th>
+                                    <th>النمرة</th>
+                                    <th>الكمية قبل العملية</th>
+                                    <th>الكمية المضافة</th>
+                                    <th>الكمية المسحوبة</th>
+                                    <th>الكمية النهائية</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="scripts.js"></script>
+</body>
+</html>
